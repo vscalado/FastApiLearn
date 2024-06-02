@@ -37,6 +37,6 @@ async def async_converter(from_currency:str, to_currency:str, price:float):
         raise HTTPException(status_code=400, detail=f'Error: Realtime Currency Exchange Rate not in response {data}')
 
     exchange_rate = float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
-    return price * exchange_rate
+    return {to_currency: price * exchange_rate}
 
 
