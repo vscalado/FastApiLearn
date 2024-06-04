@@ -11,3 +11,6 @@ class Category(CustomBaseModel):
         if not re.match('^([a-z]|-|_)+$', value):
             raise ValueError('Slug must contain only lowercase letters, dashes, and underscores')
         return value
+
+class CategoryOutput(Category):
+    id: int
