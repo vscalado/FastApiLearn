@@ -34,7 +34,7 @@ def test_list_categories(db_session,categories_on_db):
     assert categories[0].name == categories_on_db[0].name
     assert categories[0].slug == categories_on_db[0].slug
 
-def test_delete_category(db_session):
+def test_delete_category_route(db_session):
     category_model = CategoryModels(name='Roupa', slug='roupa')
     db_session.add(category_model)
     db_session.commit()
