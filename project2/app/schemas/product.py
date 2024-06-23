@@ -19,3 +19,13 @@ class Product(CustomBaseModel):
         if value <= 0:
             raise ValueError('Price must be greater than zero')
         return value
+    
+class ProductInput(CustomBaseModel):
+    category_slug: str
+    product: Product
+
+    # @field_validator('category_slug')
+    # def validate_slug(cls, value):
+    #     if not re.match('^([a-z]|-|_)+$', value):
+    #         raise ValueError('Slug must contain only lowercase letters, dashes, and underscores')
+    #     return value
