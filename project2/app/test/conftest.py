@@ -96,6 +96,7 @@ def user_on_db(db_session):
     )
     db_session.add(user)
     db_session.commit()
+    db_session.refresh(user)
 
     yield user
 
