@@ -1,12 +1,13 @@
+from typing import List
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
-from app.schemas.product import Product, ProductInput
+from app.schemas.product import Product, ProductInput, ProductOutput
 from app.routes.deps import get_db_session
 from app.use_cases.product import ProductUseCases
 
 router = APIRouter(prefix='/product', tags=['Product'])
 
-@router.post('/add')
+@router.post('/add', status_code=status.HTTP_201_CREATED, description="Add a new product")
 def add_product(
     product_input: ProductInput,
     db_session: Session = Depends(get_db_session)
@@ -17,3 +18,36 @@ def add_product(
         category_slug=product_input.category_slug)
     
     return Response(status_code=status.HTTP_201_CREATED)
+
+@router.put('/update/{id}', description="Update a product already exist")
+def update_product(
+    id: int,
+    product: Product,
+    db_session: Session = Depends(get_db_session)
+):
+    
+    uc = ProductUseCases(db_session=db_session)
+    uc.update_product(id=id, product=product)
+    
+    return Response(status_code=status.HTTP_200_OK)
+
+@router.delete('/delete/{id}', description="Delete a product")
+def delete_product(
+    id: int,
+    db_session: Session = Depends(get_db_session)
+):
+    
+    uc = ProductUseCases(db_session=db_session)
+    uc.delete_product(id=id)
+    
+    return Response(status_code=status.HTTP_200_OK)
+
+@router.get('/list', response_model=List[ProductOutput], description="List all products, and filter bt search parammeter")
+def list_product(
+    search: str = '',
+    db_session: Session = Depends(get_db_session)
+): 
+    uc = ProductUseCases(db_session=db_session)
+    products = uc.list_products(search=search)
+    
+    return products

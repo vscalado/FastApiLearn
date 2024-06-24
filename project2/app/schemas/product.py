@@ -1,6 +1,7 @@
 import re
 from pydantic import field_validator
 from app.schemas.base import CustomBaseModel
+from app.schemas.category import Category
 
 class Product(CustomBaseModel):
     name: str
@@ -29,3 +30,7 @@ class ProductInput(CustomBaseModel):
     #     if not re.match('^([a-z]|-|_)+$', value):
     #         raise ValueError('Slug must contain only lowercase letters, dashes, and underscores')
     #     return value
+
+class ProductOutput(Product):
+    id: int
+    category: Category

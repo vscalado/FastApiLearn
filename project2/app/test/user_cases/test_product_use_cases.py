@@ -1,8 +1,8 @@
 import pytest
 from fastapi.exceptions import HTTPException
 from app.use_cases.product import ProductUseCases
-from app.db.models import Product as ProductModels
-from app.schemas.product import Product
+from app.db.models import Product as ProductModel
+from app.schemas.product import Product, ProductOutput
 
 def test_add_product_uc(db_session, categories_on_db):
     uc = ProductUseCases(db_session)
@@ -16,7 +16,7 @@ def test_add_product_uc(db_session, categories_on_db):
 
     uc.add_product(product=product, category_slug=categories_on_db[0].slug)
 
-    product_on_db = db_session.query(ProductModels).first()
+    product_on_db = db_session.query(ProductModel).first()
 
     assert product_on_db is not None
     assert product_on_db.name == product.name
@@ -40,3 +40,84 @@ def test_add_product_uc_invalid_category(db_session):
 
     with pytest.raises(HTTPException):
         uc.add_product(product=product, category_slug='Invalid')
+
+def test_update_product_uc(db_session, product_on_db):
+    product = Product(
+        name = 'Camisa Mike',
+        slug = 'camisa-mike',
+        price = 22.99,
+        stock = 22
+    )
+
+    uc = ProductUseCases(db_session=db_session)
+    uc.update_product(id=product_on_db.id, product=product)
+
+    product_updated_on_db = db_session.query(ProductModel).filter_by(id=product_on_db.id)
+
+    assert product_updated_on_db is not None
+    assert product_updated_on_db.first().name == product.name
+    assert product_updated_on_db.first().slug == product.slug
+    assert product_updated_on_db.first().price == product.price
+    assert product_updated_on_db.first().stock == product.stock
+
+def test_update_product_uc_invalid_id(db_session):
+    product = Product(
+        name = 'Camisa Mike',
+        slug = 'camisa-mike',
+        price = 22.99,
+        stock = 22
+    )
+
+    uc = ProductUseCases(db_session=db_session)
+
+    with pytest.raises(HTTPException):
+        uc.update_product(id=1, product=product)
+
+def test_delete_product_uc(db_session, product_on_db):
+    uc = ProductUseCases(db_session=db_session)
+    uc.delete_product(id=product_on_db.id)
+
+    products_on_db = db_session.query(ProductModel).all()
+    assert len(products_on_db) == 0
+
+def test_delete_product_uc_non_exist(db_session):
+    uc = ProductUseCases(db_session=db_session)
+
+    with pytest.raises(HTTPException):
+        uc.delete_product(id=1)
+
+def test_list_product_uc(db_session, products_on_db):
+    uc = ProductUseCases(db_session=db_session)
+
+    products = uc.list_products()
+    
+    for product in products_on_db:
+        db_session.refresh(product)
+
+    assert len(products) == 4
+    assert type(products[0]) == ProductOutput
+    assert products[0].id == products_on_db[0].id
+    assert products[0].name == products_on_db[0].name
+    assert products[0].slug == products_on_db[0].slug
+    assert products[0].price == products_on_db[0].price
+    assert products[0].stock == products_on_db[0].stock
+    assert products[0].category.name == products_on_db[0].category.name
+    assert products[0].category.slug == products_on_db[0].category.slug
+
+def test_list_product_uc_with_search(db_session, products_on_db):
+    uc = ProductUseCases(db_session=db_session)
+
+    products = uc.list_products(search='mike')
+    
+    for product in products_on_db:
+        db_session.refresh(product)
+
+    assert len(products) == 3
+    assert type(products[0]) == ProductOutput
+    assert products[0].id == products_on_db[0].id
+    assert products[0].name == products_on_db[0].name
+    assert products[0].slug == products_on_db[0].slug
+    assert products[0].price == products_on_db[0].price
+    assert products[0].stock == products_on_db[0].stock
+    assert products[0].category.name == products_on_db[0].category.name
+    assert products[0].category.slug == products_on_db[0].category.slug

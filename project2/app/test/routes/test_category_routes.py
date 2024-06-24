@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from fastapi import status
-from app.db.models import Category as CategoryModels
+from app.db.models import Category as CategoryModel
 from app.main import app
 
 client = TestClient(app)
@@ -15,7 +15,7 @@ def test_add_category_routes(db_session):
 
     assert response.status_code == status.HTTP_201_CREATED
 
-    categories_on_db = db_session.query(CategoryModels).all()
+    categories_on_db = db_session.query(CategoryModel).all()
     assert len(categories_on_db) == 1
     db_session.delete(categories_on_db[0])
     db_session.commit()
@@ -32,7 +32,7 @@ def test_list_categories(categories_on_db):
     }
 
 def test_delete_category(db_session):
-    category_model = CategoryModels(name='Roupa', slug='roupa')
+    category_model = CategoryModel(name='Roupa', slug='roupa')
     db_session.add(category_model)
     db_session.commit()
 
@@ -40,7 +40,7 @@ def test_delete_category(db_session):
 
     assert response.status_code == status.HTTP_200_OK
 
-    category_model = db_session.query(CategoryModels).first()
+    category_model = db_session.query(CategoryModel).first()
     assert category_model is None
 
 
